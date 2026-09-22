@@ -1,0 +1,8 @@
+# Ignorar credenciales del backend
+Bodega_backend/src/main/resources/config.properties
+
+# Ignorar carpetas de compilación de Maven de ambos proyectos
+Bodega_backend/target/
+Bodega_frontend/target/
+build/
+nbproject/private/
