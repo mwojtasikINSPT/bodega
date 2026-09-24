@@ -1,109 +1,129 @@
 package prog2.bodega_frontend.views;
 
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.Route;
 import prog2.bodega_frontend.dtos.LicorDTO;
+import prog2.bodega_frontend.controller.FrontendController;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.ArrayList;
 import java.util.List;
 
 @Route("")
 public class MainView extends VerticalLayout {
 
+    private Grid<LicorDTO> grilla;
+    private TextField campoId, campoCategoria, campoMarca;
+    private MemoryBuffer bufferFoto;
+    private Upload campoUploadFoto;
+    private String nombreFotoSeleccionada = "";
+
+    private Button botonAlta, botonConsulta, botonActualizar, botonEliminar;
+
     public MainView() {
-        H1 titulo = new H1("Bodega Hielo, Dilema y Pasión");
+        setSizeFull();
+        setPadding(true);
+        setSpacing(true);
 
-        Select<String> selectorTipo = new Select<>();
-        selectorTipo.setLabel("Seleccione un tipo de licor:");
-        selectorTipo.setItems("Ron", "Whisky", "Pisco", "Cerveza", "Vino");
-        selectorTipo.setValue("ron");
-
-        Button botonMostrar = new Button("Mostrar");
-
-        Grid<LicorDTO> grilla = new Grid<>(LicorDTO.class, false);
+        grilla = new Grid<>(LicorDTO.class, false);
+        grilla.addColumn(LicorDTO::getId).setHeader("ID");
         grilla.addColumn(LicorDTO::getCategoria).setHeader("Categoría");
-        grilla.addColumn(LicorDTO::getMarca).setHeader("Marca del Licor");
-
-        //instanciar el archivo de imagen
-        Image imagenSoldOut = new Image("img/soldout.png", "Sin inventario disponible");
-        imagenSoldOut.setWidth("150px");
-        imagenSoldOut.setVisible(false);
+        grilla.addColumn(LicorDTO::getMarca).setHeader("Marca");
 
         grilla.addComponentColumn(licor -> {
-            Image img = new Image("img/" + licor.getFoto(), licor.getMarca());
-            img.setWidth("90px");
-            img.setHeight("120px");
-            img.getStyle().set("object-fit", "contain");
-            return img;
-        }).setHeader("Presentación");
+            String nombreArchivo = (licor.getFoto() != null && !licor.getFoto().isEmpty()) ? licor.getFoto() : "sin_foto.png";
 
-        botonMostrar.addClickListener(event -> {
-            String tipo = selectorTipo.getValue();
-            List<LicorDTO> licores = buscarEnBackend(tipo);
+            // Ruta relativa directa a la carpeta webapp/img del frontend
+            String rutaImagen = "img/" + nombreArchivo;
 
-            if (licores.isEmpty()) {
-                grilla.setVisible(false);
-                imagenSoldOut.setVisible(true);
-            } else {
-                imagenSoldOut.setVisible(false);
-                grilla.setVisible(true);
-                grilla.setItems(licores);
-            }
+            Image imagen = new Image(rutaImagen, licor.getMarca());
+            imagen.setHeight("80px");
+            return imagen;
+        }).setHeader("Foto");
+
+        grilla.setMinHeight("400px");
+        grilla.setSizeFull();
+
+        campoId = new TextField("ID (Para Actualizar / Eliminar)");
+        campoCategoria = new TextField("Categoría");
+        campoMarca = new TextField("Marca");
+
+        bufferFoto = new MemoryBuffer();
+        campoUploadFoto = new Upload(bufferFoto);
+        campoUploadFoto.setAcceptedFileTypes("image/jpeg", "image/png");
+        campoUploadFoto.setMaxFiles(1);
+
+        campoUploadFoto.addSucceededListener(event -> {
+            nombreFotoSeleccionada = event.getFileName();
         });
 
-        add(titulo, selectorTipo, botonMostrar, grilla, imagenSoldOut);
+        botonAlta = new Button("Guardar Nuevo");
+        botonConsulta = new Button("Mostrar Todos");
+        botonActualizar = new Button("Actualizar");
+        botonEliminar = new Button("Eliminar");
+
+        botonAlta.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        botonActualizar.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
+        botonEliminar.addThemeVariants(ButtonVariant.LUMO_ERROR);
+
+        FormLayout formulario = new FormLayout(campoId, campoCategoria, campoMarca, campoUploadFoto);
+        formulario.setResponsiveSteps(
+                new FormLayout.ResponsiveStep("0", 1),
+                new FormLayout.ResponsiveStep("800px", 4)
+        );
+        formulario.setWidthFull();
+
+        HorizontalLayout botonera = new HorizontalLayout(botonConsulta, botonAlta, botonActualizar, botonEliminar);
+        botonera.setWidthFull();
+        botonera.setFlexGrow(1, botonConsulta, botonAlta, botonActualizar, botonEliminar);
+
+        add(formulario, botonera, grilla);
+
+        new FrontendController(this);
     }
 
-    private List<LicorDTO> buscarEnBackend(String tipo) {
-        List<LicorDTO> lista = new ArrayList<>();
-        String urlBackend = "http://localhost:8080/Bodega_backend/buscarLicores?tipo=" + tipo;
+    public void setLicoresEnGrilla(List<LicorDTO> licores) {
+        grilla.setItems(licores);
+    }
 
-        try {
-            HttpClient cliente = HttpClient.newHttpClient();
-            HttpRequest peticion = HttpRequest.newBuilder().uri(URI.create(urlBackend)).GET().build();
-            HttpResponse<String> respuesta = cliente.send(peticion, HttpResponse.BodyHandlers.ofString());
-            String jsonRaw = respuesta.body().trim();
+    public String getIdIngresado() {
+        return campoId.getValue();
+    }
 
-            if (jsonRaw.length() > 2) {
-                String limpio = jsonRaw.substring(1, jsonRaw.length() - 1);
-                String[] objetosJson = limpio.split("\\},\\{");
+    public String getCategoriaIngresada() {
+        return campoCategoria.getValue();
+    }
 
-                for (String obj : objetosJson) {
-                    obj = obj.replace("{", "").replace("}", "");
-                    String[] propiedades = obj.split(",");
-                    String tipoVal = "", marcaVal = "", fotoVal = "";
+    public String getMarcaIngresada() {
+        return campoMarca.getValue();
+    }
 
-                    for (String prop : propiedades) {
-                        String[] claveValor = prop.split(":");
-                        if (claveValor.length >= 2) {
-                            String clave = claveValor[0].replace("\"", "").trim();
-                            String valor = claveValor[1].replace("\"", "").trim();
-                            if (clave.equals("tipo")) {
-                                tipoVal = valor;
-                            }
-                            if (clave.equals("marca")) {
-                                marcaVal = valor;
-                            }
-                            if (clave.equals("foto")) {
-                                fotoVal = valor;
-                            }
-                        }
-                    }
-                    lista.add(new LicorDTO(tipoVal, marcaVal, fotoVal));
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error de comunicación: " + e.getMessage());
-        }
-        return lista;
+    public String getFotoIngresada() {
+        return nombreFotoSeleccionada;
+    }
+
+    public void addBotonAltaListener(ComponentEventListener<ClickEvent<Button>> listener) {
+        botonAlta.addClickListener(listener);
+    }
+
+    public void addBotonConsultaListener(ComponentEventListener<ClickEvent<Button>> listener) {
+        botonConsulta.addClickListener(listener);
+    }
+
+    public void addBotonActualizarListener(ComponentEventListener<ClickEvent<Button>> listener) {
+        botonActualizar.addClickListener(listener);
+    }
+
+    public void addBotonEliminarListener(ComponentEventListener<ClickEvent<Button>> listener) {
+        botonEliminar.addClickListener(listener);
     }
 }
