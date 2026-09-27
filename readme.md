@@ -43,11 +43,25 @@ INSERT INTO licores (tipo, marca, foto) VALUES
     ('whisky', 'Chivas Regal', 'chivas_regal.png'),    
     ('whisky', 'Ballantines', 'ballantines.png'),    
     ('cerveza', 'Corona', 'corona.png'),    
-    ('cerveza', 'Cuzqueña', 'cuzquena.png'),    
+    ('cerveza', 'Cuzqueña', 'cuzquena.png'),
+    ('aperitivo', 'Cinzano Bianco', 'bianco.jpg'),     
     ('cerveza', 'Patagonia', 'patagonia.png'),    
     ('vino', 'La Linda', 'linda.png'),    
-    ('vino', 'Rutini', 'rutini.png'); 
+    ('vino', 'Rutini', 'rutini.png'), 
+    ('cerveza', 'Andes Roja', 'andesroja.png'),    
+    ('cerveza', 'Andes IPA', 'andesipa.jpg'), 
+    ('vino', 'Zuccardi A', 'amalbec.jpeg'), 
+    ('aperitivo', 'Cinzano Rosso', 'rosso.jpg'); 
 ```
+
+## Imágenes
+
+Las imágenes iniciales están en `Bodega_frontend/src/main/webapp/img/`.
+
+El usuario puede cargar nuevas imágenes desde la aplicación. Estas se almacenan localmente en `Bodega_backend/target/Bodega_backend-1.0-SNAPSHOT/resources/img/`.
+
+Las imágenes cargadas por el usuario no formarán parte del repositorio de GitHub.
+
 
 ## ⚙️ Instalación y Despliegue
 
