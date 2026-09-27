@@ -6,3 +6,6 @@ Bodega_backend/target/
 Bodega_frontend/target/
 build/
 nbproject/private/
+
+#Ignorar archivos .js generados por Vaadin
+/Bodega_frontend/frontend/generated/
