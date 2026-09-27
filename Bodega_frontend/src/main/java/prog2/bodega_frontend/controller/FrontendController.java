@@ -4,6 +4,7 @@ import prog2.bodega_frontend.views.MainView;
 import prog2.bodega_frontend.dtos.LicorDTO;
 import prog2.bodega_frontend.daos.LicorDAO;
 import com.vaadin.flow.component.notification.Notification;
+import java.io.InputStream;
 
 import java.util.List;
 
@@ -26,19 +27,20 @@ public class FrontendController {
     }
 
     private void procesarAlta() {
-        String categoria = v.getCategoriaIngresada();
+        String tipo = v.getTipoIngresado();
         String marca = v.getMarcaIngresada();
         String foto = v.getFotoIngresada();
+        InputStream fotoInputStream = v.getFotoInputStream();
 
-        if (categoria.isEmpty() || marca.isEmpty()) {
-            Notification.show("Error: Categoría y Marca son obligatorios");
+        if (tipo.isEmpty() || marca.isEmpty()) {
+            Notification.show("Error: Tipo y Marca son obligatorios");
             return;
         }
 
         try {
-            LicorDTO nuevoLicor = new LicorDTO(categoria, marca, foto);
-            dao.crear(nuevoLicor);
-            refrescarGrilla("");
+            LicorDTO nuevoLicor = new LicorDTO(tipo, marca, foto);
+            dao.crear(nuevoLicor, fotoInputStream);
+            refrescarVista("");
             Notification.show("Registro creado correctamente");
         } catch (Exception e) {
             Notification.show("FALLO: " + e.getMessage(), 8000, Notification.Position.MIDDLE);
@@ -46,10 +48,10 @@ public class FrontendController {
     }
 
     private void procesarConsulta() {
-        String categoriaFiltro = v.getCategoriaIngresada();
+        String tipoFiltro = v.getTipoIngresado();
         try {
-            List<LicorDTO> listaActualizada = dao.buscarLicores(categoriaFiltro);
-            v.setLicoresEnGrilla(listaActualizada);
+            List<LicorDTO> listaActualizada = dao.buscarLicores(tipoFiltro);
+            v.setLicoresEnTabla(listaActualizada);
             Notification.show("Éxito: " + listaActualizada.size() + " registros recuperados.");
         } catch (Exception e) {
             Notification.show("FALLO: " + e.getMessage(), 10000, Notification.Position.MIDDLE);
@@ -58,19 +60,20 @@ public class FrontendController {
 
     private void procesarActualizacion() {
         String idTexto = v.getIdIngresado();
-        String categoria = v.getCategoriaIngresada();
+        String tipo = v.getTipoIngresado();
         String marca = v.getMarcaIngresada();
         String foto = v.getFotoIngresada();
+        InputStream fotoInputStream = v.getFotoInputStream();
 
-        if (idTexto.isEmpty() || categoria.isEmpty() || marca.isEmpty()) {
-            Notification.show("Error: ID, Categoría y Marca son obligatorios para actualizar");
+        if (idTexto.isEmpty()) {
+            Notification.show("Error: Debe ingresar un ID para actualizar");
             return;
         }
 
         try {
-            LicorDTO licorModificado = new LicorDTO(categoria, marca, foto);
-            dao.actualizar(licorModificado, idTexto);
-            refrescarGrilla("");
+            LicorDTO licorModificado = new LicorDTO(tipo, marca, foto);
+            dao.actualizar(licorModificado, idTexto, fotoInputStream);
+            refrescarVista("");
             Notification.show("Registro actualizado correctamente");
         } catch (Exception e) {
             Notification.show("FALLO: " + e.getMessage(), 8000, Notification.Position.MIDDLE);
@@ -79,16 +82,17 @@ public class FrontendController {
 
     private void procesarEliminacion() {
         String idTexto = v.getIdIngresado();
-        if (idTexto.isEmpty()) {
+        if (idTexto == null || idTexto.trim().isEmpty()) {
             Notification.show("Error: Debe ingresar un ID para eliminar");
             return;
         }
 
         try {
-            int id = Integer.parseInt(idTexto);
+            int id = Integer.parseInt(idTexto.trim());
+
             dao.eliminar(id);
-            refrescarGrilla("");
-            Notification.show("Registro eliminado definitivamente");
+            refrescarVista("");
+            Notification.show("Registro eliminado correctamente");
         } catch (NumberFormatException e) {
             Notification.show("Error: Formato de ID inválido");
         } catch (Exception e) {
@@ -96,8 +100,8 @@ public class FrontendController {
         }
     }
 
-    private void refrescarGrilla(String categoriaActiva) throws Exception {
-        List<LicorDTO> listaActualizada = dao.buscarLicores(categoriaActiva);
-        v.setLicoresEnGrilla(listaActualizada);
+    private void refrescarVista(String tipoActivo) throws Exception {
+        List<LicorDTO> listaActualizada = dao.buscarLicores(tipoActivo);
+        v.setLicoresEnTabla(listaActualizada);
     }
 }

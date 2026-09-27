@@ -13,6 +13,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.Route;
+import java.io.InputStream;
 import prog2.bodega_frontend.dtos.LicorDTO;
 import prog2.bodega_frontend.controller.FrontendController;
 
@@ -21,8 +22,8 @@ import java.util.List;
 @Route("")
 public class MainView extends VerticalLayout {
 
-    private Grid<LicorDTO> grilla;
-    private TextField campoId, campoCategoria, campoMarca;
+    private Grid<LicorDTO> tablaLicores;
+    private TextField campoId, campoTipo, campoMarca;
     private MemoryBuffer bufferFoto;
     private Upload campoUploadFoto;
     private String nombreFotoSeleccionada = "";
@@ -34,27 +35,34 @@ public class MainView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        grilla = new Grid<>(LicorDTO.class, false);
-        grilla.addColumn(LicorDTO::getId).setHeader("ID");
-        grilla.addColumn(LicorDTO::getCategoria).setHeader("Categoría");
-        grilla.addColumn(LicorDTO::getMarca).setHeader("Marca");
+        tablaLicores = new Grid<>(LicorDTO.class, false);
+        tablaLicores.addColumn(LicorDTO::getId).setHeader("ID");
+        tablaLicores.addColumn(LicorDTO::getTipo).setHeader("Tipo");
+        tablaLicores.addColumn(LicorDTO::getMarca).setHeader("Marca");
 
-        grilla.addComponentColumn(licor -> {
-            String nombreArchivo = (licor.getFoto() != null && !licor.getFoto().isEmpty()) ? licor.getFoto() : "sin_foto.png";
+        tablaLicores.addComponentColumn(licor -> {
+            String nombreArchivo = (licor.getFoto() != null && !licor.getFoto().isEmpty()) ? licor.getFoto() : "noimage.png";
 
             // Ruta relativa directa a la carpeta webapp/img del frontend
             String rutaImagen = "img/" + nombreArchivo;
+            if (nombreArchivo.equals("noimage.png")) {
+                // Uso la imagen predeterminada del frontend.
+                rutaImagen = "img/noimage.png";
+            } else {
+                // Uso la imagen almacenada en el backend.
+                rutaImagen = "http://localhost:8080/Bodega_backend/resources/img/" + nombreArchivo;
+            }
 
             Image imagen = new Image(rutaImagen, licor.getMarca());
             imagen.setHeight("80px");
             return imagen;
         }).setHeader("Foto");
 
-        grilla.setMinHeight("400px");
-        grilla.setSizeFull();
+        tablaLicores.setMinHeight("400px");
+        tablaLicores.setSizeFull();
 
         campoId = new TextField("ID (Para Actualizar / Eliminar)");
-        campoCategoria = new TextField("Categoría");
+        campoTipo = new TextField("Tipo");
         campoMarca = new TextField("Marca");
 
         bufferFoto = new MemoryBuffer();
@@ -75,7 +83,7 @@ public class MainView extends VerticalLayout {
         botonActualizar.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
         botonEliminar.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
-        FormLayout formulario = new FormLayout(campoId, campoCategoria, campoMarca, campoUploadFoto);
+        FormLayout formulario = new FormLayout(campoId, campoTipo, campoMarca, campoUploadFoto);
         formulario.setResponsiveSteps(
                 new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("800px", 4)
@@ -86,21 +94,21 @@ public class MainView extends VerticalLayout {
         botonera.setWidthFull();
         botonera.setFlexGrow(1, botonConsulta, botonAlta, botonActualizar, botonEliminar);
 
-        add(formulario, botonera, grilla);
+        add(formulario, botonera, tablaLicores);
 
         new FrontendController(this);
     }
 
-    public void setLicoresEnGrilla(List<LicorDTO> licores) {
-        grilla.setItems(licores);
+    public void setLicoresEnTabla(List<LicorDTO> licores) {
+        tablaLicores.setItems(licores);
     }
 
     public String getIdIngresado() {
         return campoId.getValue();
     }
 
-    public String getCategoriaIngresada() {
-        return campoCategoria.getValue();
+    public String getTipoIngresado() {
+        return campoTipo.getValue();
     }
 
     public String getMarcaIngresada() {
@@ -109,6 +117,13 @@ public class MainView extends VerticalLayout {
 
     public String getFotoIngresada() {
         return nombreFotoSeleccionada;
+    }
+
+    public InputStream getFotoInputStream() {
+        if (nombreFotoSeleccionada == null || nombreFotoSeleccionada.trim().isEmpty()) {
+            return null;
+        }
+        return bufferFoto.getInputStream();
     }
 
     public void addBotonAltaListener(ComponentEventListener<ClickEvent<Button>> listener) {
