@@ -41,17 +41,12 @@ public class MainView extends VerticalLayout {
         tablaLicores.addColumn(LicorDTO::getMarca).setHeader("Marca");
 
         tablaLicores.addComponentColumn(licor -> {
-            String nombreArchivo = (licor.getFoto() != null && !licor.getFoto().isEmpty()) ? licor.getFoto() : "noimage.png";
+            String nombreArchivo = (licor.getFoto() != null && !licor.getFoto().isEmpty())
+                    ? licor.getFoto()
+                    : "noimage.png";
 
-            // Ruta relativa directa a la carpeta webapp/img del frontend
+            // Busco las imágenes iniciales en los recursos del frontend.
             String rutaImagen = "img/" + nombreArchivo;
-            if (nombreArchivo.equals("noimage.png")) {
-                // Uso la imagen predeterminada del frontend.
-                rutaImagen = "img/noimage.png";
-            } else {
-                // Uso la imagen almacenada en el backend.
-                rutaImagen = "http://localhost:8080/Bodega_backend/resources/img/" + nombreArchivo;
-            }
 
             Image imagen = new Image(rutaImagen, licor.getMarca());
             imagen.setHeight("80px");
