@@ -131,6 +131,9 @@ public class LicorServlet extends HttpServlet {
 
                 // Obtengo la ruta física donde voy a guardar la foto recibida.
                 String rutaUploads = getServletContext().getRealPath("/resources/img");
+                //DEBUG 
+                System.out.println("ARCHIVO: " + rutaUploads + File.separator + nombreArchivo);
+                System.out.println("URL CONTEXTO: " + request.getContextPath());
 
                 // Creo la carpeta de destino si todavía no existe.
                 File carpetaDestino = new File(rutaUploads);
