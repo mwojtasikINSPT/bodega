@@ -10,10 +10,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import prog2.bodega_backend.exceptions.BackendException;
 
 public class LicorDAO {
 
-    public void insertar(LicorDTO licor) throws SQLException {
+    public void insertar(LicorDTO licor) throws BackendException {
 
         // el ID lo genera BBDD
         String sql = "INSERT INTO licores (tipo, marca, foto) VALUES (?, ?, ?)";
@@ -40,10 +41,14 @@ public class LicorDAO {
                     licor.setId(rs.getInt(1));
                 }
             }
+        } catch (SQLException e) {
+
+            // Informo el error de la base de datos mediante una excepción propia.
+            throw new BackendException("Error al insertar el licor.", e);
         }
     }
 
-    public List<LicorDTO> obtenerPorTipo(String tipoBuscado) throws SQLException {
+    public List<LicorDTO> obtenerPorTipo(String tipoBuscado) throws BackendException {
 
         // Creo una lista donde voy a guardar los licores encontrados.
         List<LicorDTO> licores = new ArrayList<>();
@@ -75,12 +80,16 @@ public class LicorDAO {
                     licores.add(licor);
                 }
             }
+        } catch (SQLException e) {
+
+            // Informo el error de la base de datos mediante una excepción propia.
+            throw new BackendException("Error al obtener los licores por tipo.", e);
         }
         //Devuelvo la lista completa
         return licores;
     }
 
-    public void actualizar(LicorDTO licor) throws SQLException {
+    public void actualizar(LicorDTO licor) throws BackendException {
 
         // sentencia SQL para actualizar el licor.
         // El ID determina qué registro voy a modificar.
@@ -101,10 +110,14 @@ public class LicorDAO {
             if (filasAfectadas != 1) {
                 throw new SQLException("No se pudo actualizar el licor con ID " + licor.getId());
             }
+        } catch (SQLException e) {
+
+            // Informo el error de la base de datos mediante una excepción propia.
+            throw new BackendException("Error al actualizar el licor.", e);
         }
     }
 
-    public boolean eliminar(int id) throws SQLException {
+    public boolean eliminar(int id) throws BackendException {
 
         // Uso ? como parám para colocar el ID de forma segura mediante PreparedStatement.
         String sql = "DELETE FROM licores WHERE id = ?";
@@ -123,10 +136,14 @@ public class LicorDAO {
             }
             // Si no eliminé ninguna fila, el ID no existe en la base de datos.
             return false;
+        } catch (SQLException e) {
+
+            // Informo el error de la base de datos mediante una excepción propia.
+            throw new BackendException("Error al eliminar el licor.", e);
         }
     }
 
-    public LicorDTO obtenerPorId(int id) throws SQLException {
+    public LicorDTO obtenerPorId(int id) throws BackendException {
 
         // Inicio sin ningún licor porque todavía no sé si el ID existe.
         LicorDTO licor = null;
@@ -153,12 +170,17 @@ public class LicorDAO {
                     licor.setFoto(rs.getString("foto"));
                 }
             }
+        } catch (SQLException e) {
+
+            // Informo el error de la base de datos mediante una excepción propia.
+            throw new BackendException("Error al obtener el licor por ID.", e);
         }
+
         // Devuelvo el licor encontrado o null si el ID no existe.
         return licor;
     }
 
-    public List<LicorDTO> obtenerTodos() throws SQLException {
+    public List<LicorDTO> obtenerTodos() throws BackendException {
 
         // Creo una lista donde voy a guardar todos los licores encontrados.
         List<LicorDTO> licores = new ArrayList<>();
@@ -186,7 +208,12 @@ public class LicorDAO {
                     licores.add(licor);
                 }
             }
+        } catch (SQLException e) {
+
+            // Informo el error de la base de datos mediante una excepción propia.
+            throw new BackendException("Error al obtener los licores.", e);
         }
+
         // Devuelvo  lista completa
         return licores;
     }

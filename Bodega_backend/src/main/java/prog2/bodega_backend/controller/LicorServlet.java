@@ -10,11 +10,11 @@ import jakarta.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import prog2.bodega_backend.daos.LicorDAO;
 import prog2.bodega_backend.DTOs.LicorDTO;
+import prog2.bodega_backend.exceptions.BackendException;
 
 // Habilitamos la configuración multipart y mapeamos las 4 rutas distintas al Servlet:
 @MultipartConfig(
@@ -63,7 +63,7 @@ public class LicorServlet extends HttpServlet {
             }
             String jsonFinal = "[" + String.join(",", jsonObjetos) + "]";
             response.getWriter().write(jsonFinal);
-        } catch (Exception e) {
+        } catch (BackendException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
         }
@@ -157,8 +157,8 @@ public class LicorServlet extends HttpServlet {
                 response.getWriter().write(
                         "{\"estado\":\"Insertado correctamente\", \"id\":" + nuevoLicor.getId() + "}"
                 );
-                
-            } catch (Exception e) {
+
+            } catch (BackendException e) {
 
                 // Si guardé una foto nueva y falló la inserción, elimino el archivo
                 if (archivoGuardado != null && archivoGuardado.exists()) {
@@ -259,7 +259,7 @@ public class LicorServlet extends HttpServlet {
             dao.actualizar(licorActual);
             response.getWriter().write("{\"estado\":\"Registro actualizado correctamente\"}");
 
-        } catch (Exception e) {
+        } catch (BackendException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
         }
@@ -306,7 +306,7 @@ public class LicorServlet extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().write("{\"error\":\"ID no proporcionado en la URL (ej: ?id=11)\"}");
             }
-        } catch (SQLException e) {
+        } catch (BackendException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
         }
