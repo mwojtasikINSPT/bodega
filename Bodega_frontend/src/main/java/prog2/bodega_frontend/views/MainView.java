@@ -35,7 +35,7 @@ public class MainView extends VerticalLayout {
     private Button botonAlta, botonConsulta, botonActualizar, botonEliminar;
 
     public MainView() {
-        setSizeFull();
+        setMinHeight("100vh");
         setPadding(true);
         setSpacing(true);
         getStyle().set("background-color", "#D1D5DB");
