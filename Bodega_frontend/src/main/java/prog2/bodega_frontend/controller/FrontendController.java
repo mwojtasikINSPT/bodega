@@ -5,6 +5,7 @@ import prog2.bodega_frontend.dtos.LicorDTO;
 import prog2.bodega_frontend.daos.LicorDAO;
 import com.vaadin.flow.component.notification.Notification;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import java.util.List;
 
@@ -40,10 +41,13 @@ public class FrontendController {
         try {
             LicorDTO nuevoLicor = new LicorDTO(tipo, marca, foto);
             dao.crear(nuevoLicor, fotoInputStream);
-            refrescarVista("");
+            //refrescarVista(""); voy a querer mostrar solo el nuevo registro
+            List<LicorDTO> nuevoRegistro = new ArrayList<>();
+            nuevoRegistro.add(nuevoLicor);
+            v.setLicoresEnTabla(nuevoRegistro);
             v.limpiarCampos();
             Notification.show("Registro creado correctamente");
-         
+
         } catch (Exception e) {
             Notification.show("FALLO: " + e.getMessage(), 8000, Notification.Position.MIDDLE);
         }

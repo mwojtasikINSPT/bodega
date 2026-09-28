@@ -157,5 +157,23 @@ public class LicorDAO {
         if (respuesta.statusCode() != 200) {
             throw new Exception("Error HTTP " + respuesta.statusCode() + ": " + respuesta.body());
         }
+
+        // Obtengo el ID generado por el backend y lo asigno al licor para poder utilizarlo después en el front.
+        String json = respuesta.body().trim();
+
+        int posicionId = json.indexOf("\"id\"");
+
+        if (posicionId == -1) {
+            throw new Exception("El backend no devolvió el ID.");
+        }
+
+        int inicioNumero = json.indexOf(":", posicionId) + 1;
+        int finNumero = json.indexOf("}", inicioNumero);
+
+        int idGenerado = Integer.parseInt(
+                json.substring(inicioNumero, finNumero).trim()
+        );
+
+        licor.setId(idGenerado);
     }
 }

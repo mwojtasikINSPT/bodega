@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class LicorDAO {
 
         // Abro la conexión y preparo la sentencia.
         // El try-with-resources se encarga de cerrar ambos recursos al finalizar.
-        try (Connection con = ConexionBD.getConexion(); PreparedStatement pstmt = con.prepareStatement(sql)) {
+        try (Connection con = ConexionBD.getConexion(); PreparedStatement pstmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             //Asigno campo a cada parametro
             pstmt.setString(1, licor.getTipo());
@@ -32,6 +33,12 @@ public class LicorDAO {
             // Verifico que realmente se haya insertado un registro.
             if (filasAfectadas != 1) {
                 throw new SQLException("No se pudo insertar el licor.");
+            }
+
+            try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    licor.setId(rs.getInt(1));
+                }
             }
         }
     }

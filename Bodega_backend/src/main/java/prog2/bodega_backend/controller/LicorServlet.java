@@ -154,8 +154,10 @@ public class LicorServlet extends HttpServlet {
 
             try {
                 dao.insertar(nuevoLicor);
-                response.getWriter().write("{\"estado\":\"Insertado correctamente\"}");
-
+                response.getWriter().write(
+                        "{\"estado\":\"Insertado correctamente\", \"id\":" + nuevoLicor.getId() + "}"
+                );
+                
             } catch (Exception e) {
 
                 // Si guardé una foto nueva y falló la inserción, elimino el archivo
