@@ -41,7 +41,9 @@ public class FrontendController {
             LicorDTO nuevoLicor = new LicorDTO(tipo, marca, foto);
             dao.crear(nuevoLicor, fotoInputStream);
             refrescarVista("");
+            v.limpiarCampos();
             Notification.show("Registro creado correctamente");
+         
         } catch (Exception e) {
             Notification.show("FALLO: " + e.getMessage(), 8000, Notification.Position.MIDDLE);
         }
@@ -74,6 +76,7 @@ public class FrontendController {
             LicorDTO licorModificado = new LicorDTO(tipo, marca, foto);
             dao.actualizar(licorModificado, idTexto, fotoInputStream);
             refrescarVista("");
+            v.limpiarCampos();
             Notification.show("Registro actualizado correctamente");
         } catch (Exception e) {
             Notification.show("FALLO: " + e.getMessage(), 8000, Notification.Position.MIDDLE);
@@ -92,6 +95,7 @@ public class FrontendController {
 
             dao.eliminar(id);
             refrescarVista("");
+            v.limpiarCampos();
             Notification.show("Registro eliminado correctamente");
         } catch (NumberFormatException e) {
             Notification.show("Error: Formato de ID inválido");
