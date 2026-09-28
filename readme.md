@@ -1,6 +1,6 @@
 # 🍷 Bodega HDP (Hielo, Dilema y Pasión)
 
-Proyecto final desarrollado para la materia Programación II. Implementa un sistema de gestión de catálogo de licores aplicando una arquitectura cliente-servidor basada en el patrón MVC, separando claramente la interfaz de usuario de la lógica de negocio y persistencia de datos.
+Proyecto desarrollado para la materia Programación II. Implementa un sistema de gestión de catálogo de licores aplicando una arquitectura cliente-servidor basada en el patrón MVC, separando claramente la interfaz de usuario de la lógica de negocio y persistencia de datos.
 
 ## 🚀 Tecnologías Utilizadas
 
