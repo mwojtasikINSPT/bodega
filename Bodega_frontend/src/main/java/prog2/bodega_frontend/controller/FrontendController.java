@@ -4,10 +4,12 @@ import prog2.bodega_frontend.views.MainView;
 import prog2.bodega_frontend.dtos.LicorDTO;
 import prog2.bodega_frontend.daos.LicorDAO;
 import com.vaadin.flow.component.notification.Notification;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
 import java.util.List;
+import prog2.bodega_frontend.exceptions.FrontendException;
 
 public class FrontendController {
 
@@ -48,7 +50,7 @@ public class FrontendController {
             v.limpiarCampos();
             Notification.show("Registro creado correctamente");
 
-        } catch (Exception e) {
+        } catch (FrontendException | IOException | InterruptedException e) {
             Notification.show("FALLO: " + e.getMessage(), 8000, Notification.Position.MIDDLE);
         }
     }
@@ -82,7 +84,7 @@ public class FrontendController {
             refrescarVista("");
             v.limpiarCampos();
             Notification.show("Registro actualizado correctamente");
-        } catch (Exception e) {
+        } catch (FrontendException | IOException | InterruptedException e) {
             Notification.show("FALLO: " + e.getMessage(), 8000, Notification.Position.MIDDLE);
         }
     }
@@ -103,12 +105,12 @@ public class FrontendController {
             Notification.show("Registro eliminado correctamente");
         } catch (NumberFormatException e) {
             Notification.show("Error: Formato de ID inválido");
-        } catch (Exception e) {
+        } catch (FrontendException | IOException | InterruptedException e) {
             Notification.show("FALLO: " + e.getMessage(), 8000, Notification.Position.MIDDLE);
         }
     }
 
-    private void refrescarVista(String tipoActivo) throws Exception {
+    private void refrescarVista(String tipoActivo) throws FrontendException, IOException, InterruptedException {
         List<LicorDTO> listaActualizada = dao.buscarLicores(tipoActivo);
         v.setLicoresEnTabla(listaActualizada);
     }

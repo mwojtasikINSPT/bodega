@@ -12,13 +12,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import prog2.bodega_frontend.exceptions.FrontendException;
 
 public class LicorDAO {
 
     private final String URL_BACKEND = "http://localhost:8080/Bodega_backend/";
     private final HttpClient cliente = HttpClient.newHttpClient();
 
-    public List<LicorDTO> buscarLicores(String tipo) throws Exception {
+    public List<LicorDTO> buscarLicores(String tipo) throws FrontendException, IOException, InterruptedException {
         List<LicorDTO> lista = new ArrayList<>();
         String parametro = (tipo != null && !tipo.trim().isEmpty())
                 ? "?tipo=" + URLEncoder.encode(tipo.trim(), StandardCharsets.UTF_8)
@@ -27,13 +29,16 @@ public class LicorDAO {
 
         HttpRequest peticion = HttpRequest.newBuilder().uri(URI.create(urlConsulta)).GET().build();
         HttpResponse<String> respuesta = cliente.send(peticion, HttpResponse.BodyHandlers.ofString());
+
         String jsonRaw = respuesta.body().trim();
 
         if (respuesta.statusCode() != 200) {
-            throw new Exception("Error HTTP " + respuesta.statusCode() + " en la ruta: " + urlConsulta);
+            throw new FrontendException(
+                    "Error HTTP " + respuesta.statusCode() + " en la ruta: " + urlConsulta
+            );
         }
         if (!jsonRaw.startsWith("[")) {
-            throw new Exception("El backend no envió un array JSON.");
+            throw new FrontendException("El backend no envió un array JSON.");
         }
 
         if (jsonRaw.length() > 2) {
@@ -79,25 +84,25 @@ public class LicorDAO {
         return lista;
     }
 
-    public void crear(LicorDTO licor, InputStream fotoInputStream) throws Exception {
+    public void crear(LicorDTO licor, InputStream fotoInputStream) throws FrontendException, IOException, InterruptedException {
         enviarFormularioMultipart(URL_BACKEND + "insertar", licor, "POST", null, fotoInputStream);
     }
 
-    public void actualizar(LicorDTO licor, String id, InputStream fotoInputStream) throws Exception {
+    public void actualizar(LicorDTO licor, String id, InputStream fotoInputStream) throws FrontendException, IOException, InterruptedException {
         enviarFormularioMultipart(URL_BACKEND + "actualizar", licor, "PUT", id, fotoInputStream);
     }
 
-    public void eliminar(int id) throws Exception {
+    public void eliminar(int id) throws FrontendException, IOException, InterruptedException {
         String urlDelete = URL_BACKEND + "eliminar?id=" + id;
         HttpRequest peticion = HttpRequest.newBuilder().uri(URI.create(urlDelete)).DELETE().build();
         HttpResponse<String> respuesta = cliente.send(peticion, HttpResponse.BodyHandlers.ofString());
 
         if (respuesta.statusCode() != 200) {
-            throw new Exception("Error HTTP " + respuesta.statusCode() + ": " + respuesta.body());
+            throw new FrontendException("Error HTTP " + respuesta.statusCode() + ": " + respuesta.body());
         }
     }
 
-    private void enviarFormularioMultipart(String url, LicorDTO licor, String metodo, String id, InputStream fotoInputStream) throws Exception {
+    private void enviarFormularioMultipart(String url, LicorDTO licor, String metodo, String id, InputStream fotoInputStream) throws FrontendException, IOException, InterruptedException {
         String boundary = "----VaadinFormBoundary123456";
         String nombreFoto = (fotoInputStream != null && licor.getFoto() != null && !licor.getFoto().trim().isEmpty())
                 ? licor.getFoto()
@@ -155,16 +160,19 @@ public class LicorDAO {
         HttpResponse<String> respuesta = cliente.send(builder.build(), HttpResponse.BodyHandlers.ofString());
 
         if (respuesta.statusCode() != 200) {
-            throw new Exception("Error HTTP " + respuesta.statusCode() + ": " + respuesta.body());
+            throw new FrontendException("Error HTTP " + respuesta.statusCode() + ": " + respuesta.body());
         }
 
         // Obtengo el ID generado por el backend y lo asigno al licor para poder utilizarlo después en el front.
+        if (metodo.equals("PUT")) {
+            return;
+        }
         String json = respuesta.body().trim();
 
         int posicionId = json.indexOf("\"id\"");
 
         if (posicionId == -1) {
-            throw new Exception("El backend no devolvió el ID.");
+            throw new FrontendException("El backend no devolvió el ID.");
         }
 
         int inicioNumero = json.indexOf(":", posicionId) + 1;
